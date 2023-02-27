@@ -121,3 +121,10 @@ work_dir/
 src/
 
 mmcv/
+
+*.json
+*.pickle
+*.pkl
+*.yaml
+*.yml
+*.xxx
