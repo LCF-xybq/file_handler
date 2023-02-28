@@ -461,4 +461,85 @@ class FileClient:
 
         return _register
 
+    def get(self, filepath: Union[str, Path]) -> Union[bytes, memoryview]:
+        """Read data from a given ``filepath`` with 'rb' mode.
 
+        Note:
+            There are two types of return values for ``get``, one is ``bytes``
+            and the other is ``memoryview``. The advantage of using memoryview
+            is that you can avoid copying, and if you want to convert it to
+            ``bytes``, you can use ``.tobytes()``.
+
+        Args:
+            filepath (str or Path): Path to read data.
+
+        Returns:
+            bytes | memoryview: Expected bytes object or a memory view of the
+            bytes object.
+        """
+        return self.client.get(filepath)
+
+    def get_text(self, filepath: Union[str, Path], encoding='utf-8') -> str:
+        """Read data from a given ``filepath`` with 'r' mode."""
+        return self.client.get_text(filepath, encoding)
+
+    def put(self, obj: bytes, filepath: Union[str, Path]) -> None:
+        """Write data to a given ``filepath`` with 'wb' mode.
+
+        Note:
+            ``put`` should create a directory if the directory of ``filepath``
+            does not exist.
+
+        Args:
+            obj (bytes): Data to be written.
+            filepath (str or Path): Path to write data.
+        """
+        self.client.put(obj, filepath)
+
+    def put_text(self, obj: str, filepath: Union[str, Path]) -> None:
+        """Write data to a given ``filepath`` with 'w' mode."""
+        self.client.put_text(obj, filepath)
+
+    def remove(self, filepath: Union[str, Path]) -> None:
+        self.client.remove(filepath)
+
+    def exists(self, filepath: Union[str, Path]) -> bool:
+        self.client.exists(filepath)
+
+    def isdir(self, filepath: Union[str, Path]) -> bool:
+        self.client.isdir(filepath)
+
+    def isfile(self, filepath: Union[str, Path]) -> bool:
+        self.client.isfile(filepath)
+
+    def join_path(self, filepath: Union[str, Path],
+                  *filepaths: Union[str, Path]) -> str:
+        return self.join_path(filepath, *filepaths)
+
+    @contextmanager
+    def get_local_path(
+            self,
+            filepath: Union[str, Path]) -> Generator[Union[str, Path], None, None]:
+        """Download data from ``filepath`` and write the data to local path.
+        Note:
+            If the ``filepath`` is a local path, just return itself.
+        Args:
+            filepath (str or Path): Path to be read data.
+        Examples:
+            >>> file_client = FileClient(prefix='s3')
+            >>> with file_client.get_local_path('s3://bucket/abc.jpg') as path:
+            ...     # do something here
+        Yields:
+            Iterable[str]: Only yield one path.
+        """
+        with self.client.get_local_path(str(filepath)) as local_path:
+            yield local_path
+
+    def list_dir_or_file(self,
+                         dir_path: Union[str, Path],
+                         list_dir: bool = True,
+                         list_file: bool = True,
+                         suffix: Optional[Union[str, Tuple[str]]] = None,
+                         recursive: bool = False) -> Iterator[str]:
+        yield from self.client.list_dir_or_file(dir_path, list_dir,
+                                                list_file, suffix, recursive)
